@@ -1,0 +1,116 @@
+PFont smallFont, largeFont, italicFont;
+PImage Slide, Background;  // Add background image variable
+
+String[] componentData;
+
+void setup() {
+  size(2205, 630);  // 32:9 ratio (double 16:9)
+  smooth();  // Enable anti-aliasing for higher quality rendering
+
+  smallFont = createFont("EBGaramond-Regular.ttf", 100);
+  largeFont = createFont("EBGaramond-Regular.ttf", 200);
+  italicFont = createFont("PlayfairDisplay-BlackItalic.ttf", 300);
+  Slide = loadImage("Slide.jpg");
+  Background = loadImage("bassbackground.png");  // Load background image
+
+  componentData = new String[2];
+  loadComponentData();
+}
+
+void loadComponentData() {
+  String sqlFile = join(loadStrings("PFGMST_Table (2).sql"), "\n");
+
+  // Debug: Print the entire SQL file content
+  println("SQL File Content:\n" + sqlFile);
+
+  String valuesKeyword = "INSERT INTO";
+  int valuesStart = sqlFile.indexOf(valuesKeyword);
+
+  if (valuesStart != -1) {
+    // Extract the VALUES section
+    String valuesSection = sqlFile.substring(sqlFile.indexOf("VALUES") + "VALUES".length()).trim();
+    valuesSection = valuesSection.substring(0, valuesSection.indexOf(";")); // Up to semicolon
+
+    // Clean parentheses, split into individual rows
+    valuesSection = valuesSection.replaceAll("[()]", "").trim();
+    String[] rows = split(valuesSection, "\n");
+
+    // Debug: Print extracted rows
+    println("Extracted Rows:");
+    for (int i = 0; i < rows.length; i++) {
+      println(i + ": " + rows[i].trim());
+    }
+
+    // Filter out non-data rows (like empty strings or improperly split content)
+    ArrayList<String> cleanRows = new ArrayList<String>();
+    for (String row : rows) {
+      if (row.trim().startsWith("1,")) continue; // Skip first row
+      if (row.contains(",")) cleanRows.add(row.trim());
+    }
+
+    // Debug: Print clean rows
+    println("Cleaned Rows:");
+    for (int i = 0; i < cleanRows.size(); i++) {
+      println(i + ": " + cleanRows.get(i));
+    }
+
+    if (cleanRows.size() > 0) {
+      // Select a random row from the cleaned rows
+      int randomIndex = int(random(cleanRows.size()));
+      String[] randomRowData = split(cleanRows.get(randomIndex), ",");
+
+      // Debug: Print selected random row
+      println("Selected Random Row: " + join(randomRowData, ", "));
+
+      if (randomRowData.length >= 3) {
+        // Extract category and question
+        componentData[0] = randomRowData[1].replace("'", "").trim(); // Category
+        componentData[1] = randomRowData[2].replace("'", "").trim(); // Question
+      } else {
+        println("Selected row does not have enough columns.");
+      }
+    } else {
+      println("No rows available for random selection.");
+    }
+  } else {
+    println("INSERT INTO statement not found.");
+  }
+}
+
+void displaySlide() {
+  float newHeight = height;
+  float aspectRatio = (float) Slide.width / Slide.height;
+  float newWidth = newHeight * aspectRatio;
+
+  float x = width - newWidth;
+  float y = 0;
+
+  image(Slide, x, y, newWidth, newHeight);
+}
+
+void displayCategory() {
+  textAlign(LEFT, CENTER);  // Align text to the left and center vertically
+  fill(255);  // Set text color to white
+
+  // Display the Category text
+  textFont(italicFont, 100);  // Use a smaller font size for Category
+  text(componentData[0], 100, height / 2 - 60);  // Position on the left side and center vertically
+}
+
+void displayQuestion() {
+  textAlign(LEFT, CENTER);  // Align text to the left and center vertically
+  fill(255);  // Set text color to white
+
+  // Display the Question text
+  textFont(largeFont, 80);  // Use a smaller font size for Question
+  text(componentData[1], 100, height / 2 + 40);  // Position on the left side and center vertically below Category
+}
+
+void draw() {
+  // Draw the background image, scaled to fit the entire canvas
+  image(Background, 0, 0, width, height);
+
+  displayCategory();
+  displayQuestion();
+  displaySlide();
+}
