@@ -1,0 +1,61 @@
+PFont smallFont, largeFont, italicFont;
+PImage Slide, Background;  // Add background image variable
+
+String[] componentData;
+
+void setup() {
+  size(2205, 630);  // 32:9 ratio (double 16:9)
+  smooth();  // Enable anti-aliasing for higher quality rendering
+
+  smallFont = createFont("EBGaramond-Regular.ttf", 100);
+  largeFont = createFont("EBGaramond-Regular.ttf", 200);
+  italicFont = createFont("PlayfairDisplay-BlackItalic.ttf", 300);
+  Slide = loadImage("Slide.jpg");
+  Background = loadImage("bassbackground.png");  // Load background image
+
+  componentData = new String[2];
+  loadComponentData();
+}
+
+void loadComponentData() {
+  componentData[0] = "Category";
+  componentData[1] = "Question";
+}
+
+void displaySlide() {
+  float newHeight = height;
+  float aspectRatio = (float) Slide.width / Slide.height;
+  float newWidth = newHeight * aspectRatio;
+
+  float x = width - newWidth;
+  float y = 0;
+
+  image(Slide, x, y, newWidth, newHeight);
+}
+
+void displayCategory() {
+  textAlign(LEFT, CENTER);  // Align text to the left and center vertically
+  fill(255);  // Set text color to white
+
+  // Display the Category text
+  textFont(italicFont, 100);  // Use a smaller font size for Category
+  text(componentData[0], 100, height / 2 - 60);  // Position on the left side and center vertically
+}
+
+void displayQuestion() {
+  textAlign(LEFT, CENTER);  // Align text to the left and center vertically
+  fill(255);  // Set text color to white
+
+  // Display the Question text
+  textFont(largeFont, 80);  // Use a smaller font size for Question
+  text(componentData[1], 100, height / 2 + 40);  // Position on the left side and center vertically below Category
+}
+
+void draw() {
+  // Draw the background image, scaled to fit the entire canvas
+  image(Background, 0, 0, width, height);
+
+  displayCategory();
+  displayQuestion();
+  displaySlide();
+}
