@@ -1,0 +1,29 @@
+PFont f, EBGaramondRegular, EBGaramondBoldItalic;
+PImage img, Slide, bass, duke, qr;
+
+
+void setup(){
+  size(2205, 630);
+  smooth(); 
+  img = loadImage("bassbackground.png");
+  Slide = loadImage("PFGMSTexample.jpeg");
+  //duke = loadImage("Horizontal-White-hi-res.png");
+
+}
+
+void displaySlide() {
+  float newHeight = height;
+  float aspectRatio = (float) Slide.width / Slide.height;
+  float newWidth = newHeight * aspectRatio;
+  float x = width - newWidth;
+  float y = 0;
+
+  image(Slide, x, y, newWidth, newHeight);
+}
+
+
+void draw(){
+  image(img, 0, 0, width, height);
+  displaySlide();
+
+}
