@@ -1,0 +1,59 @@
+PFont f, regularFont, boldFont;
+PImage background, rightSide, dukeLogo, middleLogo; 
+
+
+void setup() {
+  size(2205, 630);
+  background = loadImage("bassbackground.png");
+  rightSide = loadImage("rightSide.png");
+  dukeLogo = loadImage("Horizontal-White-hi-res.png");
+  middleLogo = loadImage("BC logo_just makr mix.eps");
+  
+  regularFont = createFont("EBGaramond-Regular.ttf", 32); 
+  boldFont = createFont("EBGaramond-BoldItalic.ttf", 60);
+
+
+}
+
+void draw() {
+  // Draw the background
+  image(background, 0, 0, width, height);
+  image(rightSide, 0, 0, width, height);
+  
+  drawLeftSide();
+  
+}
+
+void drawLeftSide(){
+  float dukeLogoX = 100;
+  float dukeLogoY = 100;
+  float dukeLogoWidth = 300; 
+  float dukeLogoHeight = dukeLogo.height * (dukeLogoWidth / dukeLogo.width); // Keep aspect ratio
+  image(dukeLogo, dukeLogoX, dukeLogoY, dukeLogoWidth, dukeLogoHeight);
+
+
+  // Draw text
+  fill(255); // White text
+  textAlign(LEFT);
+  
+  textFont(regularFont);
+  textSize(40);
+  text("presents...", dukeLogoX + 300, dukeLogoY + 50);
+ 
+
+  // "your brain on communication"
+  textFont(regularFont);
+  textSize(60); // Adjust size for bold emphasis
+  text("your brain on", dukeLogoX, dukeLogoY + dukeLogoHeight + 80);
+  textFont(boldFont);
+  textSize(130); // Larger text size for emphasis
+  text("communication", dukeLogoX, dukeLogoY + dukeLogoHeight + 200);
+
+  // "Can speech be restored?"
+  textFont(regularFont);
+  textSize(40);
+  text("Can speech be restored?", dukeLogoX, dukeLogoY + dukeLogoHeight + 280);
+
+
+
+}
