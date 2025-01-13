@@ -1,0 +1,150 @@
+PFont smallFont, largeFont, italicFont;
+PImage background, slide, dukeLogo, QR, bassLogo;
+
+String[] componentData;
+
+void setup() {
+  size(2205, 630, P3D);
+  smooth();
+  background = loadImage("bassbackground.png");
+  slide = loadImage("PFGMST Slides Example (1).png");
+  dukeLogo = loadImage("Horizontal-White-hi-res.png");
+  bassLogo = loadImage("basslogo.png");
+  QR = loadImage("QR.png");
+
+  smallFont = createFont("EBGaramond-Regular.ttf", 128);
+  largeFont = createFont("EBGaramond-Regular.ttf", 128);
+  italicFont = createFont("PlayfairDisplay-BlackItalic.ttf", 256);
+
+  componentData = new String[2];
+  loadComponentData();
+}
+
+void loadComponentData() {
+  String sqlFile = join(loadStrings("PFGMST_Table (2).sql"), "\n");
+
+  // Debug: Print the entire SQL file content
+  println("SQL File Content:\n" + sqlFile);
+
+  String valuesKeyword = "INSERT INTO";
+  int valuesStart = sqlFile.indexOf(valuesKeyword);
+
+  if (valuesStart != -1) {
+    // Extract the VALUES section
+    String valuesSection = sqlFile.substring(sqlFile.indexOf("VALUES") + "VALUES".length()).trim();
+    valuesSection = valuesSection.substring(0, valuesSection.indexOf(";")); // Up to semicolon
+
+    // Clean parentheses, split into individual rows
+    valuesSection = valuesSection.replaceAll("[()]", "").trim();
+    String[] rows = split(valuesSection, "\n");
+
+    // Debug: Print extracted rows
+    println("Extracted Rows:");
+    for (int i = 0; i < rows.length; i++) {
+      println(i + ": " + rows[i].trim());
+    }
+
+    // Filter out non-data rows (like empty strings or improperly split content)
+    ArrayList<String> cleanRows = new ArrayList<String>();
+    for (String row : rows) {
+      if (row.trim().startsWith("1,")) continue; // Skip first row
+      if (row.contains(",")) cleanRows.add(row.trim());
+    }
+
+    // Debug: Print clean rows
+    println("Cleaned Rows:");
+    for (int i = 0; i < cleanRows.size(); i++) {
+      println(i + ": " + cleanRows.get(i));
+    }
+
+    if (cleanRows.size() > 0) {
+      // Select a random row from the cleaned rows
+      int randomIndex = int(random(cleanRows.size()));
+      String[] randomRowData = split(cleanRows.get(randomIndex), ",");
+
+      // Debug: Print selected random row
+      println("Selected Random Row: " + join(randomRowData, ", "));
+
+      if (randomRowData.length >= 3) {
+        // Extract category and question
+        componentData[0] = randomRowData[1].replace("'", "").trim(); // Category
+        componentData[1] = randomRowData[2].replace("'", "").trim(); // Question
+      } else {
+        println("Selected row does not have enough columns.");
+      }
+    } else {
+      println("No rows available for random selection.");
+    }
+  } else {
+    println("INSERT INTO statement not found.");
+  }
+}
+
+void displayslide() {
+  float newHeight = height;
+  float aspectRatio = (float) slide.width / slide.height;
+  float newWidth = newHeight * aspectRatio;
+
+  float x = width - newWidth;
+  float y = 0;
+
+  image(slide, x, y, newWidth, newHeight);
+}
+
+void displayLeftSide() {
+  float dukeLogoX = 75;
+  float dukeLogoY = 150;
+  float dukeLogoWidth = 300;
+  float dukeLogoHeight = dukeLogo.height * (dukeLogoWidth / dukeLogo.width); // Keep aspect ratio
+
+  float bassLogoWidth = 250;
+  float bassLogoHeight = bassLogo.height * (bassLogoWidth / bassLogo.width);
+  float bassLogoX = width / 2 - 200; // Centered horizontally
+  float bassLogoY = 50; // Top margin
+
+  float QRWidth = 75;
+  float QRHeight = QR.height * (QRWidth / QR.width);
+  float QRX = bassLogoX + 80; // Align horizontally with the bass logo
+  float QRY = bassLogoY + bassLogoHeight + 352.5; // Positioned below the bass logo with some padding
+
+  // Draw the logos
+  image(dukeLogo, dukeLogoX, dukeLogoY, dukeLogoWidth, dukeLogoHeight);
+  image(bassLogo, bassLogoX, bassLogoY, bassLogoWidth, bassLogoHeight);
+
+  // Draw the QR code
+  image(QR, QRX, QRY, QRWidth, QRHeight);
+
+  // Draw text
+  fill(255); // White text
+  textAlign(LEFT);
+
+  textFont(smallFont);
+  textSize(40);
+  text("ask your", dukeLogoX + 750, dukeLogoY + dukeLogoHeight + 330);
+  text("question:", dukeLogoX + 750, dukeLogoY + dukeLogoHeight + 370);
+
+  textFont(smallFont);
+  textSize(40);
+  text("presents...", dukeLogoX + 300, dukeLogoY + 40);
+
+  textFont(smallFont);
+  textSize(60); // Adjust size for bold emphasis
+  text("your brain on", dukeLogoX + 20, dukeLogoY + dukeLogoHeight + 50);
+  textFont(italicFont);
+  textSize(130); // Larger text size for emphasis
+  text(componentData[0], dukeLogoX + 20, dukeLogoY + dukeLogoHeight + 150);
+
+  textFont(smallFont);
+  textSize(60);
+  text(componentData[1], dukeLogoX + 20, dukeLogoY + dukeLogoHeight + 230);
+}
+
+
+void draw() {
+  // Draw the background image, scaled to fit the entire canvas
+  image(background, 0, 0, width, height);
+
+  displayLeftSide();
+  displayslide();
+  save("PFGMST.png");
+}
