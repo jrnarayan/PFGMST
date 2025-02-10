@@ -1,0 +1,117 @@
+import java.sql.*;  // Import for MySQL connectivity
+import processing.core.*;
+
+PFont smallFont, largeFont, italicFont;
+PImage Slide, Background;
+
+String[] componentData = new String[3];  // Updated for image path
+Connection conn;
+
+void setup() {
+  size(2205, 630);
+  smooth();
+
+  smallFont = createFont("EBGaramond-Regular.ttf", 100);
+  largeFont = createFont("EBGaramond-Regular.ttf", 200);
+  italicFont = createFont("PlayfairDisplay-BlackItalic.ttf", 300);
+  Background = loadImage("bassbackground.png");  
+
+  connectToDatabase();
+  loadComponentData();
+}
+
+void connectToDatabase() {
+  try {
+    String url = "jdbc:mysql://your_database_url:3306/your_database_name";
+    String user = "your_username";
+    String password = "your_password";
+
+    Class.forName("com.mysql.cj.jdbc.Driver");  // Load MySQL driver
+    conn = DriverManager.getConnection(url, user, password);
+    println("Connected to database!");
+  } catch (Exception e) {
+    e.printStackTrace();
+    println("Database connection failed.");
+  }
+}
+
+void loadComponentData() {
+  if (conn == null) {
+    println("Database connection not available.");
+    return;
+  }
+
+  try {
+    String query = "SELECT category, question, image_path FROM your_table ORDER BY RAND() LIMIT 1";
+    Statement stmt = conn.createStatement();
+    ResultSet rs = stmt.executeQuery(query);
+
+    if (rs.next()) {
+      componentData[0] = rs.getString("category");  // Category
+      componentData[1] = rs.getString("question");  // Question
+      String imagePath = rs.getString("image_path"); // Image path in DB
+
+      if (imagePath != null && !imagePath.isEmpty()) {
+        Slide = loadImage(imagePath);  // Load image from path
+      } else {
+        Slide = null;
+      }
+
+      println("Loaded: " + componentData[0] + ", " + componentData[1] + ", " + imagePath);
+    } else {
+      println("No data found in database.");
+    }
+
+    rs.close();
+    stmt.close();
+  } catch (SQLException e) {
+    e.printStackTrace();
+  }
+}
+
+void displaySlide() {
+  if (Slide != null) {
+    float newHeight = height;
+    float aspectRatio = (float) Slide.width / Slide.height;
+    float newWidth = newHeight * aspectRatio;
+    
+    float x = width - newWidth;
+    float y = 0;
+    
+    image(Slide, x, y, newWidth, newHeight);
+  }
+}
+
+void displayCategory() {
+  textAlign(LEFT, CENTER);
+  fill(255);
+  
+  textFont(italicFont, 100);
+  text(componentData[0], 100, height / 2 - 60);
+}
+
+void displayQuestion() {
+  textAlign(LEFT, CENTER);
+  fill(255);
+  
+  textFont(largeFont, 80);
+  text(componentData[1], 100, height / 2 + 40);
+}
+
+void draw() {
+  image(Background, 0, 0, width, height);
+  displayCategory();
+  displayQuestion();
+  displaySlide();
+}
+
+void stop() {
+  try {
+    if (conn != null) {
+      conn.close();
+      println("Database connection closed.");
+    }
+  } catch (SQLException e) {
+    e.printStackTrace();
+  }
+}
