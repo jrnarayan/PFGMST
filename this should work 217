@@ -1,0 +1,98 @@
+PFont smallFont, largeFont, italicFont;
+PImage background, dukeLogo, QR, bassLogo;
+
+// componentData[0] = uniqueID, [1] = category, [2] = question
+String[] componentData;
+
+void setup() {
+  size(2205, 630, P3D);
+  smooth();
+  
+  // Load static images
+  background = loadImage("bassbackground.png");
+  dukeLogo = loadImage("Horizontal-White-hi-res.png");
+  bassLogo = loadImage("basslogo.png");
+  QR = loadImage("QR.png");
+
+  // Load fonts
+  smallFont = createFont("EBGaramond-Regular.ttf", 128);
+  largeFont = createFont("EBGaramond-Regular.ttf", 128);
+  italicFont = createFont("PlayfairDisplay-BlackItalic.ttf", 256);
+
+  componentData = new String[3]; // UniqueID, Category, Question
+  loadComponentData();
+}
+
+void loadComponentData() {
+  String sqlFile = join(loadStrings("PFGMST_Table (2).sql"), "\n");
+  String valuesKeyword = "INSERT INTO";
+  
+  int valuesStart = sqlFile.indexOf(valuesKeyword);
+  if (valuesStart != -1) {
+    String valuesSection = sqlFile.substring(sqlFile.indexOf("VALUES") + "VALUES".length()).trim();
+    valuesSection = valuesSection.substring(0, valuesSection.indexOf(";"));
+    valuesSection = valuesSection.replaceAll("[()]", "").trim();
+    String[] rows = split(valuesSection, "\n");
+
+    ArrayList<String> cleanRows = new ArrayList<String>();
+    for (String row : rows) {
+      if (row.contains(",")) cleanRows.add(row.trim());
+    }
+
+    if (cleanRows.size() > 0) {
+      int randomIndex = int(random(cleanRows.size()));
+      String[] randomRowData = split(cleanRows.get(randomIndex), ",");
+
+      if (randomRowData.length >= 3) {
+        componentData[0] = randomRowData[0].replace("'", "").trim(); // Unique ID
+        componentData[1] = randomRowData[1].replace("'", "").trim(); // Category
+        componentData[2] = randomRowData[2].replace("'", "").trim(); // Question
+      }
+    }
+  }
+}
+
+void displayslide() {
+  if (componentData[0] == null) return;
+  String imageName = componentData[0] + ".png";
+  PImage slideImage = loadImage(imageName);
+  if (slideImage == null) return;
+
+  float newHeight = height;
+  float aspectRatio = (float) slideImage.width / slideImage.height;
+  float newWidth = newHeight * aspectRatio;
+  float x = width - newWidth;
+  float y = 0;
+
+  image(slideImage, x, y, newWidth, newHeight);
+}
+
+void displayLeftSide() {
+  image(dukeLogo, 75, 150, 300, dukeLogo.height * (300.0 / dukeLogo.width));
+  image(bassLogo, width / 2 - 200, 50, 250, bassLogo.height * (250.0 / bassLogo.width));
+  image(QR, width / 2 - 120, 452.5, 75, QR.height * (75.0 / QR.width));
+
+  fill(255);
+  textFont(smallFont);
+  textSize(40);
+  text("ask your", 825, 480);
+  text("question:", 825, 520);
+  text("presents...", 375, 190);
+  
+  textSize(60);
+  text("your brain on", 95, 500);
+  textFont(italicFont);
+  textSize(130);
+  text(componentData[1], 95, 600);
+  
+  textFont(smallFont);
+  textSize(60);
+  text(componentData[2], 95, 680);
+}
+
+void draw() {
+  image(background, 0, 0, width, height);
+  displayLeftSide();
+  displayslide();
+  save("PFGMST.png");
+}
